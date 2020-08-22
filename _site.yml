@@ -7,6 +7,7 @@ navbar:
     href: index.html
   - text: "Credit card dataset"
     href: code_cc.html
-  - text: "New Proj"
+  - text: "Exponential Smoothing"
+    href: exponentialsmoothing.html
 output:
   html_document:

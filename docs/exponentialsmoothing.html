@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Exponential Smoothing</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="code_cc.html">Credit card dataset</a>
+</li>
+<li>
+  <a href="exponentialsmoothing.html">Exponential Smoothing</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Exponential Smoothing</h1>
+
+</div>
+
+
+<div id="building-exponential-smoothing-model" class="section level2">
+<h2>Building exponential smoothing model</h2>
+<p>Let’s start by loading the dataset.</p>
+<pre class="r"><code>data_temp &lt;- read.table(&#39;temps.txt&#39;,header=TRUE)</code></pre>
+<p>To get a quick overview of how the data looks like, let’s take a look at the graph of year 1996.</p>
+<pre class="r"><code>month &lt;- seq(as.Date(&quot;1996-7-1&quot;), as.Date(&quot;1996-10-31&quot;), by=&quot;days&quot;)
+plot(month,data_temp[,&quot;X1996&quot;],type=&quot;l&quot;,col=&quot;red&quot;,ylim=c(50,100),ylab=&quot;1996&quot;)
+title(&quot;Jul-Oct 1996&quot;)</code></pre>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-2-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>There are a lot of spikes and dips that creates noise.</p>
+<p>Let’s prepare the data and pass it into the HoltWinters function to conduct exponential smoothing.The idea is to remove random drops or highs in the temperature.</p>
+<p>We will have to convert the data to a time-series vector for use in the HoltWinters function. Here, we create a vector by concatenating all the columns, and exclude the first column.</p>
+<pre class="r"><code># convert to vector for use in ts() function
+temp_vec &lt;- as.vector(unlist(data_temp[,-1])) # exclude first column of dates</code></pre>
+<p>In this dataset, there are 123 data points in each year. So we can use the ts() function to create a time-series and use frequency of 123 so that at point 124, it will be the next year.</p>
+<pre class="r"><code># attach time series
+temp_vec &lt;- ts(temp_vec, frequency=123, start=c(1996, 1))</code></pre>
+<p>Now, we are ready to use the vector as input to HoltWinters model.</p>
+<pre class="r"><code># Pass in NULL for the parameters to let the function calculate the parameters
+# Set seasonal component to be multiplicative to account for the seasonal trends
+
+temp_hw &lt;- HoltWinters(temp_vec, alpha=NULL, beta=NULL, gamma=NULL, seasonal = &quot;multiplicative&quot;)</code></pre>
+<p>Let’s take a look at the model generated.</p>
+<pre class="r"><code>summary(temp_hw)</code></pre>
+<pre><code>##              Length Class  Mode     
+## fitted       9348   mts    numeric  
+## x            2460   ts     numeric  
+## alpha           1   -none- numeric  
+## beta            1   -none- numeric  
+## gamma           1   -none- numeric  
+## coefficients  125   -none- numeric  
+## seasonal        1   -none- character
+## SSE             1   -none- numeric  
+## call            6   -none- call</code></pre>
+<pre class="r"><code>plot(temp_hw$fitted)</code></pre>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>xhat is the predicted values, level output can be thought of as the single exponential smoothing, trend is basically telling us that this dataset is relatively flat and stable throughout the years, and season refers to the seasonality factor for each date.</p>
+<p>Next, I will explore two approaches to judge whether the unofficial end of summer has gotten later over the years.</p>
+<div id="approach-1" class="section level3">
+<h3>Approach 1</h3>
+<p>I will use the smoothened data (xhat from temp_hw$fitted) and use CUSUM to determine a date that the weather starts cooling off. I will be taking the mean temperature for groups of 3 years. My rationale is that there shouldn’t be too much changes within 3 years, and taking the mean of each date for 3 years would give a good representation of the temperature changes for that time period.</p>
+<p>Next, I will then review the end-summer-dates (I will have 6 data points) and review if this date has gotten later over the years.</p>
+<pre class="r"><code># extracting the predicted data points based on application of exponential smoothing
+xhat &lt;- temp_hw$fitted[,1]</code></pre>
+<p>Now, I have a time-series vector named xhat that contains all the values from 1997 to 2015. Note that 1996 does not have xhat values as it is used as the baseline.</p>
+<p>Next, I want to reshape the vector back into the original data’s shape.</p>
+<pre class="r"><code>data_xhat &lt;- data.frame((matrix(xhat, nrow=123)))
+colnames(data_xhat) &lt;- colnames(data_temp)[3:21]</code></pre>
+<p>Let’s examine a plot for one of the years, and compare the original data vs the smoothened data</p>
+<pre class="r"><code>month &lt;- seq(as.Date(&quot;2015-7-1&quot;), as.Date(&quot;2015-10-31&quot;), by=&quot;days&quot;)
+plot(month,data_temp[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;red&quot;,ylim=c(50,100),ylab=&quot;2015&quot;)
+lines(month,data_xhat[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;black&quot;,ylim=c(50,100),ylab=&quot;2015&quot;)
+legend(95,95,legend=c(&quot;original&quot;,&quot;smoothened&quot;),col=c(&quot;red&quot;,&quot;black&quot;),lty=c(1,1),cex=0.7)
+title(&quot;Comparison of original and smoothened data for 2015&quot;)</code></pre>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Based on the plot above, we can see that the smoothened plot (black) did smoothen out some of the sharp spikes in the original data (red).</p>
+<p>Doing a quick check on the alpha used for the HoltWinters model:</p>
+<pre class="r"><code>temp_hw$alpha </code></pre>
+<pre><code>##    alpha 
+## 0.615003</code></pre>
+<p>The alpha used is 0.615, which is relatively high. If we want to smoothen the graph further, we can use lower value of alpha, for example 0.1</p>
+<p>Let’s take a look at the graph should we force the model to use 0.1 for alpha.</p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>We can see that with a lower value of alpha, the smoothening effect is very obvious and a lot of the spikes and dips have been smoothened.</p>
+<p>Next, using the CUSUM approach to determine an end-summer-date for the years. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.</p>
+<p>For each 3-year-period, I used the CUSUM approach to determine a date that summer ends (cooling of temperature). The findings are tabluated below:</p>
+<pre class="r"><code>year_range &lt;- c(&#39;1997-1999&#39;,&#39;2000-2002&#39;,&#39;2003-2005&#39;,&#39;2006-2008&#39;,&#39;2009-2011&#39;,&#39;2012-2015&#39;)
+end_summer_date &lt;- c(&#39;21-Sep&#39;, &#39;2-Sep&#39;, &#39;11-Sep&#39;,&#39;16-Sep&#39;,&#39;17-Sep&#39;,&#39;17-Sep&#39;)
+data.frame(year_range,end_summer_date)</code></pre>
+<pre><code>##   year_range end_summer_date
+## 1  1997-1999          21-Sep
+## 2  2000-2002           2-Sep
+## 3  2003-2005          11-Sep
+## 4  2006-2008          16-Sep
+## 5  2009-2011          17-Sep
+## 6  2012-2015          17-Sep</code></pre>
+<p>Based on approach 1, it can’t be concluded that the end of summer has goten later over the years. Let’s try approach 2 and see what we get.</p>
+</div>
+<div id="approach-2---using-the-seasonality-factor" class="section level3">
+<h3>Approach 2 - using the seasonality factor</h3>
+<p>The seasonality factor (Ct) for the entire dataset is plotted in the fourth row in the plot below.</p>
+<pre class="r"><code>plot(temp_hw$fitted)</code></pre>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Each hump represents a year, and the overall shape makes sense since we use Jul-Sep for each year, and Ct is closely related to the Ct of the same month, previous year. Based on observation, the trend is similar, but we can see that each hump may have slight differences. Especially comparing the hump in 2015 - it looks very different from that in 2000.</p>
+<p>Let’s reshape the data similar to Approach 1.</p>
+<pre class="r"><code>season &lt;- temp_hw$fitted[,4]
+data_season &lt;- data.frame(matrix(season,nrow=123,byrow=FALSE))
+colnames(data_season) &lt;- colnames(data_temp)[3:21]
+head(data_season)</code></pre>
+<pre><code>##      X1997    X1998    X1999    X2000    X2001    X2002    X2003    X2004    X2005
+## 1 1.052653 1.049468 1.120607 1.103336 1.118390 1.108172 1.140906 1.140574 1.125438
+## 2 1.100742 1.099653 1.108025 1.098323 1.110184 1.116213 1.126827 1.154074 1.142187
+## 3 1.135413 1.135420 1.139096 1.142831 1.143201 1.138495 1.129678 1.156092 1.165657
+## 4 1.110338 1.110492 1.117079 1.125774 1.134539 1.126117 1.130758 1.137722 1.150639
+## 5 1.025231 1.025233 1.044684 1.067291 1.084725 1.097239 1.115055 1.103877 1.120818
+## 6 1.025838 1.025722 1.028169 1.042340 1.053954 1.067494 1.080203 1.094312 1.102680
+##      X2006    X2007    X2008    X2009    X2010    X2011    X2012    X2013    X2014
+## 1 1.122063 1.161415 1.198102 1.198910 1.243012 1.243781 1.238435 1.300204 1.290647
+## 2 1.131889 1.144549 1.134661 1.153433 1.165431 1.172935 1.190735 1.191956 1.219190
+## 3 1.147982 1.149459 1.135756 1.153310 1.155197 1.157286 1.169773 1.189915 1.172309
+## 4 1.146992 1.142497 1.150162 1.151169 1.157751 1.163844 1.159343 1.166605 1.167993
+## 5 1.133733 1.132167 1.142714 1.139244 1.112909 1.132435 1.132045 1.145230 1.168161
+## 6 1.092178 1.075766 1.088547 1.082185 1.103092 1.115071 1.118575 1.121598 1.134962
+##      X2015
+## 1 1.254521
+## 2 1.228826
+## 3 1.169045
+## 4 1.158956
+## 5 1.170449
+## 6 1.145475</code></pre>
+<p>For each hump, there is a “dip”. We can investigate if the “dip” is being delayed as the years go by. For example, in 2015 (plot below), the dip is around mid-Sep by observation.</p>
+<pre class="r"><code>month &lt;- seq(as.Date(&quot;2015-7-1&quot;), as.Date(&quot;2015-10-31&quot;), by=&quot;days&quot;)
+plot(month,data_season[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;black&quot;,ylab=&quot;2015&quot;)
+title(&quot;Seasonality factor - 2015&quot;)</code></pre>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-16-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>Next, I will use CUSUM to determine an end-summer-date for the years, which is where the “dip” in the data happens. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.</p>
+<pre class="r"><code>year_range &lt;- c(&#39;1997-1999&#39;,&#39;2000-2002&#39;,&#39;2003-2005&#39;,&#39;2006-2008&#39;,&#39;2009-2011&#39;,&#39;2012-2015&#39;)
+end_summer_date &lt;- c(&#39;18-Sep&#39;, &#39;15-Sep&#39;, &#39;15-Sep&#39;,&#39;6-Sep&#39;,&#39;4-Sep&#39;,&#39;4-Sep&#39;)
+data.frame(year_range,end_summer_date)</code></pre>
+<pre><code>##   year_range end_summer_date
+## 1  1997-1999          18-Sep
+## 2  2000-2002          15-Sep
+## 3  2003-2005          15-Sep
+## 4  2006-2008           6-Sep
+## 5  2009-2011           4-Sep
+## 6  2012-2015           4-Sep</code></pre>
+<p>Based on this, it is also not conclusive that summer is ending later over the years. More data needs to be collected over more years so we can make better sense of the data.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
