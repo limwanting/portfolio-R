@@ -1,13 +1,16 @@
 ---
 title: "Credit card dataset"
+<<<<<<< HEAD
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
  encoding=encoding,
  output_file=file.path(dirname(input_file), out_dir, 'code_cc.html'))})
+=======
+>>>>>>> 4d0bff1dbc60cdde1503f7ea0bb323323ef7366b
 author: "Wan Ting"
 date: "22/08/2020"
-output: html_document
+
 ---
 
 ```{r setup, include=FALSE}
