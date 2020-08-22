@@ -11,5 +11,3 @@ navbar:
     href: exponentialsmoothing.html
   - text: "Blog"
     href: https://medium.com/@limwanting
-output:
-  html_document:

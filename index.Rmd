@@ -1,5 +1,11 @@
 ---
-title: "index"
-contact: "limwanting1991@gmail.com"
-date: "22/08/2020"
+title: "About me"
 ---
+
+Welcome to my space! I currently work in ...
+
+I am currently pursuing my Masters in Business Analytics at ...
+
+Before I pivoted into data and analytics, I was a chemical engineer, graduating with my Bachelors in Chemical Engineering from the National University of Singapore in May 2014 and had a short stint in public service as an engineer till 2018.
+
+I love working on various projects and research, constantly learning and challenging myself. In my free time, I am either cooped up at home with a good book or up in the air on aerial silks.
