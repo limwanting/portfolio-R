@@ -1,0 +1,175 @@
+---
+title: "Exponential Smoothing"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Building exponential smoothing model
+
+Let's start by loading the dataset.
+
+```{r}
+data_temp <- read.table('temps.txt',header=TRUE)
+```
+
+To get a quick overview of how the data looks like, let's take a look at the graph of year 1996.
+
+```{r, fig.height = 3, fig.width = 5, fig.align="center"}
+month <- seq(as.Date("1996-7-1"), as.Date("1996-10-31"), by="days")
+plot(month,data_temp[,"X1996"],type="l",col="red",ylim=c(50,100),ylab="1996")
+title("Jul-Oct 1996")
+```
+
+There are a lot of spikes and dips that creates noise.
+
+Let's prepare the data and pass it into the HoltWinters function to conduct exponential smoothing.The idea is to remove random drops or highs in the temperature.
+
+We will have to convert the data to a time-series vector for use in the HoltWinters function. Here, we create a vector by concatenating all the columns, and exclude the first column.
+
+```{r}
+# convert to vector for use in ts() function
+temp_vec <- as.vector(unlist(data_temp[,-1])) # exclude first column of dates
+```
+
+In this dataset, there are 123 data points in each year. So we can use the ts() function to create a time-series and use frequency of 123 so that at point 124, it will be the next year.
+
+```{r}
+# attach time series
+temp_vec <- ts(temp_vec, frequency=123, start=c(1996, 1))
+```
+
+Now, we are ready to use the vector as input to HoltWinters model.
+
+```{r}
+# Pass in NULL for the parameters to let the function calculate the parameters
+# Set seasonal component to be multiplicative to account for the seasonal trends
+
+temp_hw <- HoltWinters(temp_vec, alpha=NULL, beta=NULL, gamma=NULL, seasonal = "multiplicative")
+
+```
+
+Let's take a look at the model generated.
+
+```{r}
+summary(temp_hw)
+```
+
+```{r}
+plot(temp_hw$fitted)
+```
+
+xhat is the predicted values, level output can be thought of as the single exponential smoothing, trend is basically telling us that this dataset is relatively flat and stable throughout the years, and season refers to the seasonality factor for each date.
+
+Next, I will explore two approaches to judge whether the unofficial end of summer has gotten later over the years.
+
+
+### Approach 1
+
+I will use the smoothened data (xhat from temp_hw$fitted) and use CUSUM to determine a date that the weather starts cooling off. I will be taking the mean temperature for groups of 3 years. My rationale is that there shouldn't be too much changes within 3 years, and taking the mean of each date for 3 years would give a good representation of the temperature changes for that time period.
+
+Next, I will then review the end-summer-dates (I will have 6 data points) and review if this date has gotten later over the years.
+
+```{r}
+# extracting the predicted data points based on application of exponential smoothing
+xhat <- temp_hw$fitted[,1]
+```
+
+Now, I have a time-series vector named xhat that contains all the values from 1997 to 2015. Note that 1996 does not have xhat values as it is used as the baseline.
+
+Next, I want to reshape the vector back into the original data's shape.
+
+```{r}
+data_xhat <- data.frame((matrix(xhat, nrow=123)))
+colnames(data_xhat) <- colnames(data_temp)[3:21]
+```
+
+Let's examine a plot for one of the years, and compare the original data vs the smoothened data
+
+```{r}
+month <- seq(as.Date("2015-7-1"), as.Date("2015-10-31"), by="days")
+plot(month,data_temp[,"X2015"],type="l",col="red",ylim=c(50,100),ylab="2015")
+lines(month,data_xhat[,"X2015"],type="l",col="black",ylim=c(50,100),ylab="2015")
+legend(95,95,legend=c("original","smoothened"),col=c("red","black"),lty=c(1,1),cex=0.7)
+title("Comparison of original and smoothened data for 2015")
+
+```
+
+Based on the plot above, we can see that the smoothened plot (black) did smoothen out some of the sharp spikes in the original data (red).
+
+Doing a quick check on the alpha used for the HoltWinters model:
+
+```{r}
+temp_hw$alpha 
+```
+
+The alpha used is 0.615, which is relatively high. If we want to smoothen the graph further, we can use lower value of alpha, for example 0.1
+
+Let's take a look at the graph should we force the model to use 0.1 for alpha.
+
+```{r, echo=FALSE}
+temp_hw2 <- HoltWinters(temp_vec, alpha=0.1, beta=NULL, gamma=NULL, seasonal = "multiplicative")
+xhat2 <- temp_hw2$fitted[,1]
+data_xhat2 <- data.frame((matrix(xhat2, nrow=123)))
+colnames(data_xhat2) <- colnames(data_temp)[3:21]
+
+plot(month,data_temp[,"X2015"],type="l",col="red",ylim=c(50,100),ylab="2015")
+lines(month,data_xhat2[,"X2015"],type="l",col="black",ylim=c(50,100),ylab="2015")
+legend(95,95,legend=c("original","smoothened"),col=c("red","black"),lty=c(1,1),cex=0.7)
+title("Comparison of original and smoothened data for 2015 (alpha = 0.1)")
+```
+
+We can see that with a lower value of alpha, the smoothening effect is very obvious and a lot of the spikes and dips have been smoothened.
+
+Next, using the CUSUM approach to determine an end-summer-date for the years. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.
+
+For each 3-year-period, I used the CUSUM approach to determine a date that summer ends (cooling of temperature). The findings are tabluated below:
+
+```{r}
+year_range <- c('1997-1999','2000-2002','2003-2005','2006-2008','2009-2011','2012-2015')
+end_summer_date <- c('21-Sep', '2-Sep', '11-Sep','16-Sep','17-Sep','17-Sep')
+data.frame(year_range,end_summer_date)
+```
+
+Based on approach 1, it can't be concluded that the end of summer has goten later over the years. Let's try approach 2 and see what we get.
+
+
+### Approach 2 - using the seasonality factor
+
+The seasonality factor (Ct) for the entire dataset is plotted in the fourth row in the plot below.
+
+```{r}
+plot(temp_hw$fitted)
+```
+
+Each hump represents a year, and the overall shape makes sense since we use Jul-Sep for each year, and Ct is closely related to the Ct of the same month, previous year. Based on observation, the trend is similar, but we can see that each hump may have slight differences. Especially comparing the hump in 2015 - it looks very different from that in 2000.
+
+Let's reshape the data similar to Approach 1.
+
+```{r}
+season <- temp_hw$fitted[,4]
+data_season <- data.frame(matrix(season,nrow=123,byrow=FALSE))
+colnames(data_season) <- colnames(data_temp)[3:21]
+head(data_season)
+```
+
+For each hump, there is a "dip". We can investigate if the "dip" is being delayed as the years go by. For example, in 2015 (plot below), the dip is around mid-Sep by observation.
+
+```{r, fig.height = 3, fig.width = 5, fig.align="center"}
+month <- seq(as.Date("2015-7-1"), as.Date("2015-10-31"), by="days")
+plot(month,data_season[,"X2015"],type="l",col="black",ylab="2015")
+title("Seasonality factor - 2015")
+
+```
+
+Next, I will use CUSUM to determine an end-summer-date for the years, which is where the "dip" in the data happens. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.
+
+```{r}
+year_range <- c('1997-1999','2000-2002','2003-2005','2006-2008','2009-2011','2012-2015')
+end_summer_date <- c('18-Sep', '15-Sep', '15-Sep','6-Sep','4-Sep','4-Sep')
+data.frame(year_range,end_summer_date)
+```
+
+Based on this, it is also not conclusive that summer is ending later over the years. More data needs to be collected over more years so we can make better sense of the data.
