@@ -7,5 +7,6 @@ navbar:
     href: index.html
   - text: "Credit card dataset"
     href: code_cc.html
+  - text: "New Proj"
 output:
   html_document:

@@ -1,5 +1,5 @@
 ---
 title: "index"
-author: "Wan Ting"
+contact: "limwanting1991@gmail.com"
 date: "22/08/2020"
 ---
