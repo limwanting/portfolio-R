@@ -1,0 +1,12 @@
+name: "Portfolio-R"
+output_dir: "docs"
+navbar:
+ title: "Portfolio"
+ left:
+  - text: "Home"
+    href: index.html
+  - text: "Credit card datset"
+    href: code_cc.html
+output:
+  html_document:
+  theme: cosmo

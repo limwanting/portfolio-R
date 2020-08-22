@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Wan Ting" />
+
+
+<title>Credit card dataset</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Portfolio</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="code_cc.html">Credit card datset</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Credit card dataset</h1>
+<h4 class="author">Wan Ting</h4>
+<h4 class="date">22/08/2020</h4>
+
+</div>
+
+
+<p>In this file, I will be doing an exploratory analysis using a sample dataset.</p>
+<div id="loading-datasets" class="section level4">
+<h4>Loading datasets</h4>
+<p>First step is to load the relevant dataset.</p>
+<pre class="r"><code>data &lt;- read.table(&#39;credit_card_data-headers.txt&#39;,header=TRUE)
+summary(data)</code></pre>
+<pre><code>##        A1               A2              A3               A8               A9        
+##  Min.   :0.0000   Min.   :13.75   Min.   : 0.000   Min.   : 0.000   Min.   :0.0000  
+##  1st Qu.:0.0000   1st Qu.:22.58   1st Qu.: 1.040   1st Qu.: 0.165   1st Qu.:0.0000  
+##  Median :1.0000   Median :28.46   Median : 2.855   Median : 1.000   Median :1.0000  
+##  Mean   :0.6896   Mean   :31.58   Mean   : 4.831   Mean   : 2.242   Mean   :0.5352  
+##  3rd Qu.:1.0000   3rd Qu.:38.25   3rd Qu.: 7.438   3rd Qu.: 2.615   3rd Qu.:1.0000  
+##  Max.   :1.0000   Max.   :80.25   Max.   :28.000   Max.   :28.500   Max.   :1.0000  
+##       A10              A11              A12              A14         
+##  Min.   :0.0000   Min.   : 0.000   Min.   :0.0000   Min.   :   0.00  
+##  1st Qu.:0.0000   1st Qu.: 0.000   1st Qu.:0.0000   1st Qu.:  70.75  
+##  Median :1.0000   Median : 0.000   Median :1.0000   Median : 160.00  
+##  Mean   :0.5612   Mean   : 2.498   Mean   :0.5382   Mean   : 180.08  
+##  3rd Qu.:1.0000   3rd Qu.: 3.000   3rd Qu.:1.0000   3rd Qu.: 271.00  
+##  Max.   :1.0000   Max.   :67.000   Max.   :1.0000   Max.   :2000.00  
+##       A15               R1        
+##  Min.   :     0   Min.   :0.0000  
+##  1st Qu.:     0   1st Qu.:0.0000  
+##  Median :     5   Median :0.0000  
+##  Mean   :  1013   Mean   :0.4526  
+##  3rd Qu.:   399   3rd Qu.:1.0000  
+##  Max.   :100000   Max.   :1.0000</code></pre>
+</div>
+<div id="loading-libraries-needed" class="section level4">
+<h4>Loading libraries needed</h4>
+<p>Next we will need to load the relevant libraries.</p>
+<pre class="r"><code>library(kernlab)
+library(kknn)</code></pre>
+</div>
+<div id="part-1-and-2" class="section level3">
+<h3>Part 1 and 2</h3>
+<p>In this part, we will use the support vector machine function (ksvm) contained in the R package kernlab to find a good classifier for this data. We will also try other non-linear kernels besides vanilladot to try to find one that may provide better predictions.</p>
+<div id="fitting-our-svm-classifier" class="section level4">
+<h4>Fitting our SVM classifier:</h4>
+<p>Fitting our SVM classifier to the credit card dataset using ksvm. ksvm requires the inputs to be a data matrix and factor, so the as.matrix and as.factor functions need to be applied.</p>
+<p>Here, I will try three different kernel functions, namely vanilladot, rbfdot, and polydot. The performance of each model will be compared.</p>
+<pre class="r"><code># vanilladot
+ksvm_model_vanilladot &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;vanilladot&#39;,C = 100,scaled = TRUE)</code></pre>
+<pre><code>##  Setting default kernel parameters</code></pre>
+<pre class="r"><code>ksvm_model_vanilladot</code></pre>
+<pre><code>## Support Vector Machine object of class &quot;ksvm&quot; 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 100 
+## 
+## Linear (vanilla) kernel function. 
+## 
+## Number of Support Vectors : 189 
+## 
+## Objective Function Value : -17887.92 
+## Training error : 0.136086</code></pre>
+<pre class="r"><code># polydot
+ksvm_model_polydot &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;polydot&#39;,C = 100,scaled = TRUE)</code></pre>
+<pre><code>##  Setting default kernel parameters</code></pre>
+<pre class="r"><code>ksvm_model_polydot</code></pre>
+<pre><code>## Support Vector Machine object of class &quot;ksvm&quot; 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 100 
+## 
+## Polynomial kernel function. 
+##  Hyperparameters : degree =  1  scale =  1  offset =  1 
+## 
+## Number of Support Vectors : 190 
+## 
+## Objective Function Value : -17887.98 
+## Training error : 0.136086</code></pre>
+<pre class="r"><code># rbfdot
+ksvm_model_rbfdot &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
+ksvm_model_rbfdot</code></pre>
+<pre><code>## Support Vector Machine object of class &quot;ksvm&quot; 
+## 
+## SV type: C-svc  (classification) 
+##  parameter : cost C = 100 
+## 
+## Gaussian Radial Basis kernel function. 
+##  Hyperparameter : sigma =  0.0992188277568945 
+## 
+## Number of Support Vectors : 245 
+## 
+## Objective Function Value : -8679.351 
+## Training error : 0.042813</code></pre>
+<p>After running the above, it is found that using rbfdot kernel returns the lowest training error.</p>
+<p>I will generate predictions of each model using the predict function, and check what fraction of each model’s predictions match the actual classification.</p>
+<pre class="r"><code>preds_vanilladot &lt;- predict(ksvm_model_vanilladot,data[,1:10])
+preds_polydot &lt;- predict(ksvm_model_polydot,data[,1:10])
+preds_rbfdot &lt;- predict(ksvm_model_rbfdot,data[,1:10])
+
+# check what fraction of the model&#39;s predictions match the actual classification
+sum(preds_vanilladot==data[,11]) / nrow(data)</code></pre>
+<pre><code>## [1] 0.8639144</code></pre>
+<pre class="r"><code>sum(preds_polydot==data[,11]) / nrow(data)</code></pre>
+<pre><code>## [1] 0.8639144</code></pre>
+<pre class="r"><code>sum(preds_rbfdot==data[,11]) / nrow(data)</code></pre>
+<pre><code>## [1] 0.9571865</code></pre>
+<p>Using rbfdot kernel also returns the highest accuracy as 95% of the predictions match the actual classification.</p>
+<p>We shall use the rbfdot model as the chosen kernel.</p>
+<p>Let’s now experiment with different values of C:</p>
+<pre class="r"><code>j &lt;- 0
+C_results &lt;- rep(0,7)
+
+for (i in c(0.01,0.1,1,10,100,1000,10000)){
+  j&lt;-j+1
+  ksvm_model &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = i,scaled = TRUE)
+  # check what fraction of the model&#39;s predictions match the actual classification
+  preds &lt;- predict(ksvm_model,data[,1:10])
+  accuracy &lt;- sum(preds==data[,11]) / nrow(data)
+  C_results[j] &lt;- accuracy
+}
+
+C_results</code></pre>
+<pre><code>## [1] 0.5611621 0.8593272 0.8715596 0.9143731 0.9525994 0.9831804 0.9954128</code></pre>
+<p>Based on the results, I would choose C=100 as it returns about 94% accuracy on the dataset. From C=0.1 onwards, the accuracy is quite commendable. C=1000 and C=10000 provides very high accuracy of &gt;98% but the danger is overfitting to this model, as it is a nonlinear kernel.</p>
+<p>Now, I can work out the equation for the classifier. As the ksvm model does not directly return the coefficients, use xmatrix and coef (attributes of the model) to calculate the coefficients.</p>
+<p>The goal is to obtain the weight of each of the 10 attributes from our data, so that the classifier will be a1x1 + a2x2…+a0 = 0</p>
+<pre class="r"><code>ksvm_model &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
+# calculate a1...am
+a &lt;- colSums(ksvm_model@xmatrix[[1]] * ksvm_model@coef[[1]])
+# calculate a0
+a0 &lt;- -ksvm_model@b
+a</code></pre>
+<pre><code>##         A1         A2         A3         A8         A9        A10        A11 
+## -19.017048 -37.689803  -8.703352  56.309071  50.018530 -24.069429  14.800350 
+##        A12        A14        A15 
+## -23.966495 -58.187570  51.267724</code></pre>
+<pre class="r"><code>a0</code></pre>
+<pre><code>## [1] 0.798002</code></pre>
+<p>Based on the above, the equation will be (-19.017048)A1 + (-37.6898026)A2 + (-8.7033525)A3 + (56.3090714)A8 + (50.0185296)A9 + (-24.0694289)A10 + (14.8003497)A11 + (-23.9664946)A12 + (-58.1875697)A14 + (51.2677241)A15 + 0.798002 = 0</p>
+</div>
+</div>
+<div id="part-3---using-kknn-to-suggest-a-good-value-of-k" class="section level3">
+<h3>Part 3 - Using kknn to suggest a good value of k</h3>
+<p>The next part is to use kknn. This is different from SVM as the methodology for KNN is to determine the k nearest neighbours to the target instance. In this context, k refers to the number of nearest neighbours to use in the model.</p>
+<div id="loading-relevant-libraries" class="section level4">
+<h4>Loading relevant libraries</h4>
+<pre class="r"><code>library(kknn)</code></pre>
+</div>
+</div>
+<div id="fitting-knn" class="section level3">
+<h3>Fitting KNN:</h3>
+<p>To know the accuracy for each value of k, the knn model needs to be created for each data point sequentially. At the end, we can then record the accuracy when comparing with the actual classification.</p>
+<pre class="r"><code>predict &lt;- rep(0,nrow(data))
+accuracy &lt;- rep(0,30)
+
+for (kval in 1:30){
+
+for (i in 1:nrow(data)){
+  knn_model &lt;- kknn(R1~.,data[-i,],data[i,],k=kval,scale=TRUE)
+  # R1~. is a formula object, meaning to use all other variables than &#39;R1&#39; as predictors to predict R1
+  predict[i] &lt;- floor(predict(knn_model)+0.5)
+}
+  accuracy[kval] &lt;- sum(predict == data[,11]) / nrow(data)
+
+}</code></pre>
+<p>Using the plot of accuracy against k value, we can see which value of k gives the highest accuracy.</p>
+<p>Based on the plot below, we can see that k=12 and k=15 gives the highest accuracy.</p>
+<pre class="r"><code>plot(accuracy,xlab = &#39;value of k&#39;)</code></pre>
+<p><img src="code_cc_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code># k value at which accuracy is highest
+kval &lt;- which.max(accuracy)
+maxaccurate &lt;- round(max(accuracy)*100 , digits=2)</code></pre>
+<p>We can use k = 12 and it classifies the data points in the full dataset to 85.32% accuracy.</p>
+</div>
+<div id="question-3.1" class="section level2">
+<h2>Question 3.1</h2>
+<div id="part-a---using-cross-validation-for-the-knn-model" class="section level3">
+<h3>Part a - Using cross-validation for the knn model</h3>
+<p>In this section, we will use train.knn to perform leave-one-out crossvalidation. Randomly select one third of the dataset to be the test set.</p>
+<pre class="r"><code>sample_size &lt;- floor(nrow(data)/3)
+sample_set &lt;- sample(1:nrow(data), sample_size, replace = FALSE, prob = NULL)
+
+# selecting the non sample data points as the train set
+train_set &lt;- data[-sample_set,]
+
+# selecting the sample data points as the test set
+test_set &lt;- data[sample_set,]</code></pre>
+<p>Next, let’s train using train.kknn to find the optimal value of k.</p>
+<pre class="r"><code>knn_model_train &lt;- train.kknn(R1~., data = train_set, kmax = 50, kernel=c(&quot;optimal&quot;,&quot;rectangular&quot;, &quot;inv&quot;, &quot;gaussian&quot;, &quot;triangular&quot;), scale = TRUE) 
+
+knn_model_train</code></pre>
+<pre><code>## 
+## Call:
+## train.kknn(formula = R1 ~ ., data = train_set, kmax = 50, kernel = c(&quot;optimal&quot;,     &quot;rectangular&quot;, &quot;inv&quot;, &quot;gaussian&quot;, &quot;triangular&quot;), scale = TRUE)
+## 
+## Type of response variable: continuous
+## minimal mean absolute error: 0.1788991
+## Minimal mean squared error: 0.09927762
+## Best kernel: gaussian
+## Best k: 34</code></pre>
+<p>Let’s check the performance on the test set:</p>
+<pre class="r"><code>predict_frac &lt;- predict(knn_model_train,test_set)
+
+# convert the fraction to 0 or 1
+predict_test &lt;- floor(predict_frac + 0.5)
+
+predict_accuracy &lt;- sum(predict_test == test_set[,11]) / nrow(test_set)
+
+predict_accuracy &lt;- round(predict_accuracy*100,digit=2)</code></pre>
+<p>The predicted accuracy is 83.49%.</p>
+<p>We can also have more details on the predictions by using a confusion matrix.</p>
+<pre class="r"><code>table(predict_test,test_set[,11])</code></pre>
+<pre><code>##             
+## predict_test   0   1
+##            0 104  15
+##            1  21  78</code></pre>
+</div>
+<div id="part-b---splitting-the-data-into-training-validation-and-test-sets" class="section level3">
+<h3>Part b - Splitting the data into training, validation, and test sets</h3>
+<p>I will now split the data into training, validation, and test data sets. I will be using the rotation method. This is because the dataset sequence appears to have the 0s and 1s clumped together, so we don’t want to over-represent either response in our split datasets.</p>
+<p>Training set - build the model Validation set - picking a model Test set - estimate performance of model</p>
+<pre class="r"><code>validation &lt;- seq(2,nrow(data),5)
+validation_set &lt;- data[validation,]
+
+test &lt;- seq(4,nrow(data),5)
+test_set &lt;- data[test,]
+
+train1 &lt;- seq(1,nrow(data),5)
+train3 &lt;- seq(3,nrow(data),5)
+train5 &lt;- seq(5,nrow(data),5)
+train &lt;- c(train1,train3,train5)
+train_set &lt;- data[train,]</code></pre>
+<p>I will train on both SVM and KNN models.</p>
+<div id="svm-model" class="section level4">
+<h4>SVM model</h4>
+<pre class="r"><code>  ksvm_model_part3 &lt;- ksvm(x=as.matrix(train_set[,1:10]),as.factor(train_set[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
+
+preds_ksvm_train &lt;- predict(ksvm_model_part3,train_set[,1:10])
+accuracy_ksvm_train &lt;- sum(preds_ksvm_train==train_set[,11]) / nrow(train_set)</code></pre>
+<p>The accuracy on the training set is 96%.</p>
+<pre class="r"><code>preds_ksvm_val &lt;- predict(ksvm_model_part3,validation_set[,1:10])
+accuracy_ksvm_val &lt;- sum(preds_ksvm_val==validation_set[,11]) / nrow(validation_set)</code></pre>
+<p>The accuracy on the validation set is 82%. The lowered accuracy is expected behaviour as this is a set of data that the model has yet to “see”.</p>
+</div>
+<div id="knn-model" class="section level4">
+<h4>KNN model</h4>
+<pre class="r"><code>knn_model_part3 &lt;- kknn(R1~.,train_set,validation_set,k=12,scale=TRUE)
+
+predicted_knn_part3 &lt;- floor(predict(knn_model_part3)+0.5)
+accuracy_knn_part3 &lt;- sum(predicted_knn_part3 == validation_set[,11]) / nrow(validation_set)</code></pre>
+<p>For the KNN model, after using the training set to train the model, the accuracy of the validation set is 84%.</p>
+<p>Therefore, accuracy of validation set: KSVM model: 82% KNN model: 84%</p>
+<p>We will select the KNN model as it performs better on the validation set. For the final evaluation of the effectiveness, the test set accuracy will be used.</p>
+<pre class="r"><code>final_model_part3 &lt;- kknn(R1~.,train_set,test_set,k=12,scale=TRUE)
+
+final_pred_part3 &lt;- floor(predict(final_model_part3)+0.5)
+accuracy_part3 &lt;- sum(final_pred_part3 == test_set[,11]) / nrow(test_set)</code></pre>
+<p>The performance of the KNN model on the test set is 82%. Therefore, we will judge the effectiveness of the selected model as 82%.</p>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
