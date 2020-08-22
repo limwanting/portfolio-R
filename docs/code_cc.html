@@ -381,12 +381,12 @@ ksvm_model_rbfdot</code></pre>
 ##  parameter : cost C = 100 
 ## 
 ## Gaussian Radial Basis kernel function. 
-##  Hyperparameter : sigma =  0.0983874063732585 
+##  Hyperparameter : sigma =  0.087861975940166 
 ## 
-## Number of Support Vectors : 244 
+## Number of Support Vectors : 245 
 ## 
-## Objective Function Value : -8729.301 
-## Training error : 0.044343</code></pre>
+## Objective Function Value : -9392.483 
+## Training error : 0.04893</code></pre>
 <p>After running the above, it is found that using rbfdot kernel returns the lowest training error.</p>
 <p>I will generate predictions of each model using the predict function, and check what fraction of each model’s predictions match the actual classification.</p>
 <pre class="r"><code>preds_vanilladot &lt;- predict(ksvm_model_vanilladot,data[,1:10])
@@ -399,7 +399,7 @@ sum(preds_vanilladot==data[,11]) / nrow(data)</code></pre>
 <pre class="r"><code>sum(preds_polydot==data[,11]) / nrow(data)</code></pre>
 <pre><code>## [1] 0.8639144</code></pre>
 <pre class="r"><code>sum(preds_rbfdot==data[,11]) / nrow(data)</code></pre>
-<pre><code>## [1] 0.9556575</code></pre>
+<pre><code>## [1] 0.9510703</code></pre>
 <p>Using rbfdot kernel also returns the highest accuracy as 95% of the predictions match the actual classification.</p>
 <p>We shall use the rbfdot model as the chosen kernel.</p>
 <p>Let’s now experiment with different values of C:</p>
@@ -416,7 +416,7 @@ for (i in c(0.01,0.1,1,10,100,1000,10000)){
 }
 
 C_results</code></pre>
-<pre><code>## [1] 0.5596330 0.8593272 0.8700306 0.9143731 0.9525994 0.9847095 0.9938838</code></pre>
+<pre><code>## [1] 0.5672783 0.8593272 0.8700306 0.9082569 0.9541284 0.9816514 0.9954128</code></pre>
 <p>Based on the results, I would choose C=100 as it returns about 94% accuracy on the dataset. From C=0.1 onwards, the accuracy is quite commendable. C=1000 and C=10000 provides very high accuracy of &gt;98% but the danger is overfitting to this model, as it is a nonlinear kernel.</p>
 <p>Now, I can work out the equation for the classifier. As the ksvm model does not directly return the coefficients, use xmatrix and coef (attributes of the model) to calculate the coefficients.</p>
 <p>The goal is to obtain the weight of each of the 10 attributes from our data, so that the classifier will be a1x1 + a2x2…+a0 = 0</p>
@@ -427,12 +427,12 @@ a &lt;- colSums(ksvm_model@xmatrix[[1]] * ksvm_model@coef[[1]])
 a0 &lt;- -ksvm_model@b
 a</code></pre>
 <pre><code>##        A1        A2        A3        A8        A9       A10       A11       A12 
-## -19.09033 -36.12809  -8.46839  55.54365  50.68234 -25.74738  18.38485 -24.31878 
+## -18.12463 -32.79059  -6.83355  55.95858  52.19259 -28.10908  24.15947 -25.05163 
 ##       A14       A15 
-## -57.86456  53.03027</code></pre>
+## -55.64706  56.19557</code></pre>
 <pre class="r"><code>a0</code></pre>
-<pre><code>## [1] 0.7496602</code></pre>
-<p>Based on the above, the equation will be (-19.0903257)A1 + (-36.1280916)A2 + (-8.4683904)A3 + (55.543651)A8 + (50.6823386)A9 + (-25.7473755)A10 + (18.384851)A11 + (-24.318777)A12 + (-57.8645614)A14 + (53.0302726)A15 + 0.7496602 = 0</p>
+<pre><code>## [1] 0.6584813</code></pre>
+<p>Based on the above, the equation will be (-18.1246346)A1 + (-32.7905884)A2 + (-6.83355)A3 + (55.9585836)A8 + (52.1925885)A9 + (-28.1090771)A10 + (24.1594742)A11 + (-25.0516255)A12 + (-55.6470618)A14 + (56.1955686)A15 + 0.6584813 = 0</p>
 </div>
 </div>
 <div id="part-3---using-kknn-to-suggest-a-good-value-of-k" class="section level3">
@@ -490,10 +490,10 @@ knn_model_train</code></pre>
 ## train.kknn(formula = R1 ~ ., data = train_set, kmax = 50, kernel = c(&quot;optimal&quot;,     &quot;rectangular&quot;, &quot;inv&quot;, &quot;gaussian&quot;, &quot;triangular&quot;), scale = TRUE)
 ## 
 ## Type of response variable: continuous
-## minimal mean absolute error: 0.1697248
-## Minimal mean squared error: 0.09552205
-## Best kernel: triangular
-## Best k: 43</code></pre>
+## minimal mean absolute error: 0.1926606
+## Minimal mean squared error: 0.1060647
+## Best kernel: inv
+## Best k: 11</code></pre>
 <p>Let’s check the performance on the test set:</p>
 <pre class="r"><code>predict_frac &lt;- predict(knn_model_train,test_set)
 
@@ -503,13 +503,13 @@ predict_test &lt;- floor(predict_frac + 0.5)
 predict_accuracy &lt;- sum(predict_test == test_set[,11]) / nrow(test_set)
 
 predict_accuracy &lt;- round(predict_accuracy*100,digit=2)</code></pre>
-<p>The predicted accuracy is 80.28%.</p>
+<p>The predicted accuracy is 82.57%.</p>
 <p>We can also have more details on the predictions by using a confusion matrix.</p>
 <pre class="r"><code>table(predict_test,test_set[,11])</code></pre>
 <pre><code>##             
 ## predict_test  0  1
-##            0 95 14
-##            1 29 80</code></pre>
+##            0 92 18
+##            1 20 88</code></pre>
 </div>
 <div id="part-b---splitting-the-data-into-training-validation-and-test-sets" class="section level3">
 <h3>Part b - Splitting the data into training, validation, and test sets</h3>
