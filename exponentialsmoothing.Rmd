@@ -6,8 +6,13 @@ title: "Exponential Smoothing"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Exponential is a time-series forecasting method whereby each prediction in time period t+1 is a weighted sum of past observations. For the model, there is an exponentially decreasing weight for past observations, i.e. the most recent observation has the highest weightage.
 
-## Building exponential smoothing model
+Thus, exponential smoothing is typically used for short-term forecasts instead of long-term.
+
+In this exercise, we will use temperature data from one of the cities in US and use exponential smoothing combined with CUSUM to explore if the end of summer has gotten later over the years.  
+
+### Building exponential smoothing model
 
 Let's start by loading the dataset.
 
@@ -15,7 +20,13 @@ Let's start by loading the dataset.
 data_temp <- read.table('temps.txt',header=TRUE)
 ```
 
-To get a quick overview of how the data looks like, let's take a look at the graph of year 1996.
+The dataset has daily temperature values for Year 1996 - Year 2015. Let's look at the first five rows of the data.
+
+```{r}
+head(data_temp)
+```
+
+To get a quick overview of how the data for each year looks like, let's take a look at the graph of year 1996.
 
 ```{r, fig.height = 3, fig.width = 5, fig.align="center"}
 month <- seq(as.Date("1996-7-1"), as.Date("1996-10-31"), by="days")
@@ -63,8 +74,7 @@ plot(temp_hw$fitted)
 
 xhat is the predicted values, level output can be thought of as the single exponential smoothing, trend is basically telling us that this dataset is relatively flat and stable throughout the years, and season refers to the seasonality factor for each date.
 
-Next, I will explore two approaches to judge whether the unofficial end of summer has gotten later over the years.
-
+Next, let's explore two approaches to judge whether the unofficial end of summer has gotten later over the years.  
 
 ### Approach 1
 
@@ -123,7 +133,7 @@ title("Comparison of original and smoothened data for 2015 (alpha = 0.1)")
 
 We can see that with a lower value of alpha, the smoothening effect is very obvious and a lot of the spikes and dips have been smoothened.
 
-Next, using the CUSUM approach to determine an end-summer-date for the years. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.
+Next, using the CUSUM approach to determine an end-summer-date for the years. I used an Excel spreadsheet for the CUSUM exercise and the results are below.
 
 For each 3-year-period, I used the CUSUM approach to determine a date that summer ends (cooling of temperature). The findings are tabluated below:
 
@@ -133,7 +143,7 @@ end_summer_date <- c('21-Sep', '2-Sep', '11-Sep','16-Sep','17-Sep','17-Sep')
 data.frame(year_range,end_summer_date)
 ```
 
-Based on approach 1, it can't be concluded that the end of summer has goten later over the years. Let's try approach 2 and see what we get.
+Based on approach 1, it can't be concluded that the end of summer has gotten later over the years. Let's try approach 2 and see what we get.  
 
 
 ### Approach 2 - using the seasonality factor
@@ -164,7 +174,7 @@ title("Seasonality factor - 2015")
 
 ```
 
-Next, I will use CUSUM to determine an end-summer-date for the years, which is where the "dip" in the data happens. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.
+Next, I will use CUSUM to determine an end-summer-date for the years, which is where the "dip" in the data happens. Again, I used an Excel spreadsheet for the CUSUM exercise and the results are below.
 
 ```{r}
 year_range <- c('1997-1999','2000-2002','2003-2005','2006-2008','2009-2011','2012-2015')

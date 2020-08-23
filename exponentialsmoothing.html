@@ -300,15 +300,34 @@ $(document).ready(function () {
 </div>
 
 
-<div id="building-exponential-smoothing-model" class="section level2">
-<h2>Building exponential smoothing model</h2>
+<p>Exponential is a time-series forecasting method whereby each prediction in time period t+1 is a weighted sum of past observations. For the model, there is an exponentially decreasing weight for past observations, i.e. the most recent observation has the highest weightage.</p>
+<p>Thus, exponential smoothing is typically used for short-term forecasts instead of long-term.</p>
+<p>In this exercise, we will use temperature data from one of the cities in US and use exponential smoothing combined with CUSUM to explore if the end of summer has gotten later over the years.</p>
+<div id="building-exponential-smoothing-model" class="section level3">
+<h3>Building exponential smoothing model</h3>
 <p>Let’s start by loading the dataset.</p>
 <pre class="r"><code>data_temp &lt;- read.table(&#39;temps.txt&#39;,header=TRUE)</code></pre>
-<p>To get a quick overview of how the data looks like, let’s take a look at the graph of year 1996.</p>
+<p>The dataset has daily temperature values for Year 1996 - Year 2015. Let’s look at the first five rows of the data.</p>
+<pre class="r"><code>head(data_temp)</code></pre>
+<pre><code>##     DAY X1996 X1997 X1998 X1999 X2000 X2001 X2002 X2003 X2004 X2005 X2006 X2007
+## 1 1-Jul    98    86    91    84    89    84    90    73    82    91    93    95
+## 2 2-Jul    97    90    88    82    91    87    90    81    81    89    93    85
+## 3 3-Jul    97    93    91    87    93    87    87    87    86    86    93    82
+## 4 4-Jul    90    91    91    88    95    84    89    86    88    86    91    86
+## 5 5-Jul    89    84    91    90    96    86    93    80    90    89    90    88
+## 6 6-Jul    93    84    89    91    96    87    93    84    90    82    81    87
+##   X2008 X2009 X2010 X2011 X2012 X2013 X2014 X2015
+## 1    85    95    87    92   105    82    90    85
+## 2    87    90    84    94    93    85    93    87
+## 3    91    89    83    95    99    76    87    79
+## 4    90    91    85    92    98    77    84    85
+## 5    88    80    88    90   100    83    86    84
+## 6    82    87    89    90    98    83    87    84</code></pre>
+<p>To get a quick overview of how the data for each year looks like, let’s take a look at the graph of year 1996.</p>
 <pre class="r"><code>month &lt;- seq(as.Date(&quot;1996-7-1&quot;), as.Date(&quot;1996-10-31&quot;), by=&quot;days&quot;)
 plot(month,data_temp[,&quot;X1996&quot;],type=&quot;l&quot;,col=&quot;red&quot;,ylim=c(50,100),ylab=&quot;1996&quot;)
 title(&quot;Jul-Oct 1996&quot;)</code></pre>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-2-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-3-1.png" width="480" style="display: block; margin: auto;" /></p>
 <p>There are a lot of spikes and dips that creates noise.</p>
 <p>Let’s prepare the data and pass it into the HoltWinters function to conduct exponential smoothing.The idea is to remove random drops or highs in the temperature.</p>
 <p>We will have to convert the data to a time-series vector for use in the HoltWinters function. Here, we create a vector by concatenating all the columns, and exclude the first column.</p>
@@ -335,9 +354,10 @@ temp_hw &lt;- HoltWinters(temp_vec, alpha=NULL, beta=NULL, gamma=NULL, seasonal 
 ## SSE             1   -none- numeric  
 ## call            6   -none- call</code></pre>
 <pre class="r"><code>plot(temp_hw$fitted)</code></pre>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
 <p>xhat is the predicted values, level output can be thought of as the single exponential smoothing, trend is basically telling us that this dataset is relatively flat and stable throughout the years, and season refers to the seasonality factor for each date.</p>
-<p>Next, I will explore two approaches to judge whether the unofficial end of summer has gotten later over the years.</p>
+<p>Next, let’s explore two approaches to judge whether the unofficial end of summer has gotten later over the years.</p>
+</div>
 <div id="approach-1" class="section level3">
 <h3>Approach 1</h3>
 <p>I will use the smoothened data (xhat from temp_hw$fitted) and use CUSUM to determine a date that the weather starts cooling off. I will be taking the mean temperature for groups of 3 years. My rationale is that there shouldn’t be too much changes within 3 years, and taking the mean of each date for 3 years would give a good representation of the temperature changes for that time period.</p>
@@ -354,7 +374,7 @@ plot(month,data_temp[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;red&quot;,
 lines(month,data_xhat[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;black&quot;,ylim=c(50,100),ylab=&quot;2015&quot;)
 legend(95,95,legend=c(&quot;original&quot;,&quot;smoothened&quot;),col=c(&quot;red&quot;,&quot;black&quot;),lty=c(1,1),cex=0.7)
 title(&quot;Comparison of original and smoothened data for 2015&quot;)</code></pre>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p>Based on the plot above, we can see that the smoothened plot (black) did smoothen out some of the sharp spikes in the original data (red).</p>
 <p>Doing a quick check on the alpha used for the HoltWinters model:</p>
 <pre class="r"><code>temp_hw$alpha </code></pre>
@@ -362,9 +382,9 @@ title(&quot;Comparison of original and smoothened data for 2015&quot;)</code></p
 ## 0.615003</code></pre>
 <p>The alpha used is 0.615, which is relatively high. If we want to smoothen the graph further, we can use lower value of alpha, for example 0.1</p>
 <p>Let’s take a look at the graph should we force the model to use 0.1 for alpha.</p>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 <p>We can see that with a lower value of alpha, the smoothening effect is very obvious and a lot of the spikes and dips have been smoothened.</p>
-<p>Next, using the CUSUM approach to determine an end-summer-date for the years. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.</p>
+<p>Next, using the CUSUM approach to determine an end-summer-date for the years. I used an Excel spreadsheet for the CUSUM exercise and the results are below.</p>
 <p>For each 3-year-period, I used the CUSUM approach to determine a date that summer ends (cooling of temperature). The findings are tabluated below:</p>
 <pre class="r"><code>year_range &lt;- c(&#39;1997-1999&#39;,&#39;2000-2002&#39;,&#39;2003-2005&#39;,&#39;2006-2008&#39;,&#39;2009-2011&#39;,&#39;2012-2015&#39;)
 end_summer_date &lt;- c(&#39;21-Sep&#39;, &#39;2-Sep&#39;, &#39;11-Sep&#39;,&#39;16-Sep&#39;,&#39;17-Sep&#39;,&#39;17-Sep&#39;)
@@ -376,13 +396,13 @@ data.frame(year_range,end_summer_date)</code></pre>
 ## 4  2006-2008          16-Sep
 ## 5  2009-2011          17-Sep
 ## 6  2012-2015          17-Sep</code></pre>
-<p>Based on approach 1, it can’t be concluded that the end of summer has goten later over the years. Let’s try approach 2 and see what we get.</p>
+<p>Based on approach 1, it can’t be concluded that the end of summer has gotten later over the years. Let’s try approach 2 and see what we get.</p>
 </div>
 <div id="approach-2---using-the-seasonality-factor" class="section level3">
 <h3>Approach 2 - using the seasonality factor</h3>
 <p>The seasonality factor (Ct) for the entire dataset is plotted in the fourth row in the plot below.</p>
 <pre class="r"><code>plot(temp_hw$fitted)</code></pre>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Each hump represents a year, and the overall shape makes sense since we use Jul-Sep for each year, and Ct is closely related to the Ct of the same month, previous year. Based on observation, the trend is similar, but we can see that each hump may have slight differences. Especially comparing the hump in 2015 - it looks very different from that in 2000.</p>
 <p>Let’s reshape the data similar to Approach 1.</p>
 <pre class="r"><code>season &lt;- temp_hw$fitted[,4]
@@ -414,8 +434,8 @@ head(data_season)</code></pre>
 <pre class="r"><code>month &lt;- seq(as.Date(&quot;2015-7-1&quot;), as.Date(&quot;2015-10-31&quot;), by=&quot;days&quot;)
 plot(month,data_season[,&quot;X2015&quot;],type=&quot;l&quot;,col=&quot;black&quot;,ylab=&quot;2015&quot;)
 title(&quot;Seasonality factor - 2015&quot;)</code></pre>
-<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-16-1.png" width="480" style="display: block; margin: auto;" /></p>
-<p>Next, I will use CUSUM to determine an end-summer-date for the years, which is where the “dip” in the data happens. I will use a spreadsheet to calculate the dates, and the details are in the attached spreadsheet.</p>
+<p><img src="exponentialsmoothing_files/figure-html/unnamed-chunk-17-1.png" width="480" style="display: block; margin: auto;" /></p>
+<p>Next, I will use CUSUM to determine an end-summer-date for the years, which is where the “dip” in the data happens. Again, I used an Excel spreadsheet for the CUSUM exercise and the results are below.</p>
 <pre class="r"><code>year_range &lt;- c(&#39;1997-1999&#39;,&#39;2000-2002&#39;,&#39;2003-2005&#39;,&#39;2006-2008&#39;,&#39;2009-2011&#39;,&#39;2012-2015&#39;)
 end_summer_date &lt;- c(&#39;18-Sep&#39;, &#39;15-Sep&#39;, &#39;15-Sep&#39;,&#39;6-Sep&#39;,&#39;4-Sep&#39;,&#39;4-Sep&#39;)
 data.frame(year_range,end_summer_date)</code></pre>
@@ -427,7 +447,6 @@ data.frame(year_range,end_summer_date)</code></pre>
 ## 5  2009-2011           4-Sep
 ## 6  2012-2015           4-Sep</code></pre>
 <p>Based on this, it is also not conclusive that summer is ending later over the years. More data needs to be collected over more years so we can make better sense of the data.</p>
-</div>
 </div>
 
 
