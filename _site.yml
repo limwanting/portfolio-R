@@ -5,7 +5,7 @@ navbar:
  left:
   - text: "Home"
     href: index.html
-  - text: "Credit card dataset"
+  - text: "Classification models"
     href: code_cc.html
   - text: "Exponential Smoothing"
     href: exponentialsmoothing.html
