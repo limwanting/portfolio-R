@@ -11,7 +11,7 @@
 
 
 
-<title>Credit card dataset</title>
+<title>Classification models</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -295,53 +295,39 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Credit card dataset</h1>
+<h1 class="title toc-ignore">Classification models</h1>
 
 </div>
 
 
-<p>In this file, I will be doing an exploratory analysis using a sample dataset.</p>
-<div id="loading-datasets" class="section level4">
-<h4>Loading datasets</h4>
-<p>First step is to load the relevant dataset.</p>
+<p>In this exercise, I will apply classification models (support vector machine and k nearest neighbour) to make predictions on successful credit card applications. The dataset is obtained from the “Credit Approval Data Set” from the UCI Machine Learning Repository (<a href="https://archive.ics.uci.edu/ml/datasets/Credit+Approval" class="uri">https://archive.ics.uci.edu/ml/datasets/Credit+Approval</a>) without the categorical variables and without data points that have missing values.</p>
+<p>The dataset has 654 data points, 6 continuous and 4 binary predictor variables. The last column is a binary response variable indicating if the application was positive or negative.</p>
+<div id="loading-datasets-and-libraries" class="section level4">
+<h4>Loading datasets and libraries</h4>
+<p>First step is to load the dataset and check out the first few rows of the data. The last column R1 is the binary response variable.</p>
 <pre class="r"><code>data &lt;- read.table(&#39;credit_card_data-headers.txt&#39;,header=TRUE)
-summary(data)</code></pre>
-<pre><code>##        A1               A2              A3               A8               A9        
-##  Min.   :0.0000   Min.   :13.75   Min.   : 0.000   Min.   : 0.000   Min.   :0.0000  
-##  1st Qu.:0.0000   1st Qu.:22.58   1st Qu.: 1.040   1st Qu.: 0.165   1st Qu.:0.0000  
-##  Median :1.0000   Median :28.46   Median : 2.855   Median : 1.000   Median :1.0000  
-##  Mean   :0.6896   Mean   :31.58   Mean   : 4.831   Mean   : 2.242   Mean   :0.5352  
-##  3rd Qu.:1.0000   3rd Qu.:38.25   3rd Qu.: 7.438   3rd Qu.: 2.615   3rd Qu.:1.0000  
-##  Max.   :1.0000   Max.   :80.25   Max.   :28.000   Max.   :28.500   Max.   :1.0000  
-##       A10              A11              A12              A14         
-##  Min.   :0.0000   Min.   : 0.000   Min.   :0.0000   Min.   :   0.00  
-##  1st Qu.:0.0000   1st Qu.: 0.000   1st Qu.:0.0000   1st Qu.:  70.75  
-##  Median :1.0000   Median : 0.000   Median :1.0000   Median : 160.00  
-##  Mean   :0.5612   Mean   : 2.498   Mean   :0.5382   Mean   : 180.08  
-##  3rd Qu.:1.0000   3rd Qu.: 3.000   3rd Qu.:1.0000   3rd Qu.: 271.00  
-##  Max.   :1.0000   Max.   :67.000   Max.   :1.0000   Max.   :2000.00  
-##       A15               R1        
-##  Min.   :     0   Min.   :0.0000  
-##  1st Qu.:     0   1st Qu.:0.0000  
-##  Median :     5   Median :0.0000  
-##  Mean   :  1013   Mean   :0.4526  
-##  3rd Qu.:   399   3rd Qu.:1.0000  
-##  Max.   :100000   Max.   :1.0000</code></pre>
-</div>
-<div id="loading-libraries-needed" class="section level4">
-<h4>Loading libraries needed</h4>
-<p>Next we will need to load the relevant libraries.</p>
+head(data)</code></pre>
+<pre><code>##   A1    A2    A3   A8 A9 A10 A11 A12 A14 A15 R1
+## 1  1 30.83 0.000 1.25  1   0   1   1 202   0  1
+## 2  0 58.67 4.460 3.04  1   0   6   1  43 560  1
+## 3  0 24.50 0.500 1.50  1   1   0   1 280 824  1
+## 4  1 27.83 1.540 3.75  1   0   5   0 100   3  1
+## 5  1 20.17 5.625 1.71  1   1   0   1 120   0  1
+## 6  1 32.08 4.000 2.50  1   1   0   0 360   0  1</code></pre>
+<p>Loading libraries that will be used.</p>
 <pre class="r"><code>library(kernlab)
 library(kknn)</code></pre>
 </div>
-<div id="part-1-and-2" class="section level3">
-<h3>Part 1 and 2</h3>
+<div id="classification-model-1---support-vector-machine" class="section level3">
+<h3>Classification Model 1 - Support Vector Machine</h3>
 <p>In this part, we will use the support vector machine function (ksvm) contained in the R package kernlab to find a good classifier for this data. We will also try other non-linear kernels besides vanilladot to try to find one that may provide better predictions.</p>
 <div id="fitting-our-svm-classifier" class="section level4">
 <h4>Fitting our SVM classifier:</h4>
 <p>Fitting our SVM classifier to the credit card dataset using ksvm. ksvm requires the inputs to be a data matrix and factor, so the as.matrix and as.factor functions need to be applied.</p>
 <p>Here, I will try three different kernel functions, namely vanilladot, rbfdot, and polydot. The performance of each model will be compared.</p>
-<pre class="r"><code># vanilladot
+<pre class="r"><code>set.seed(1)
+
+# vanilladot
 ksvm_model_vanilladot &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;vanilladot&#39;,C = 100,scaled = TRUE)</code></pre>
 <pre><code>##  Setting default kernel parameters</code></pre>
 <pre class="r"><code>ksvm_model_vanilladot</code></pre>
@@ -381,12 +367,12 @@ ksvm_model_rbfdot</code></pre>
 ##  parameter : cost C = 100 
 ## 
 ## Gaussian Radial Basis kernel function. 
-##  Hyperparameter : sigma =  0.0862185309004977 
+##  Hyperparameter : sigma =  0.0917879768914306 
 ## 
-## Number of Support Vectors : 246 
+## Number of Support Vectors : 244 
 ## 
-## Objective Function Value : -9500.34 
-## Training error : 0.04893</code></pre>
+## Objective Function Value : -9139.119 
+## Training error : 0.047401</code></pre>
 <p>After running the above, it is found that using rbfdot kernel returns the lowest training error.</p>
 <p>I will generate predictions of each model using the predict function, and check what fraction of each model’s predictions match the actual classification.</p>
 <pre class="r"><code>preds_vanilladot &lt;- predict(ksvm_model_vanilladot,data[,1:10])
@@ -399,14 +385,15 @@ sum(preds_vanilladot==data[,11]) / nrow(data)</code></pre>
 <pre class="r"><code>sum(preds_polydot==data[,11]) / nrow(data)</code></pre>
 <pre><code>## [1] 0.8639144</code></pre>
 <pre class="r"><code>sum(preds_rbfdot==data[,11]) / nrow(data)</code></pre>
-<pre><code>## [1] 0.9510703</code></pre>
+<pre><code>## [1] 0.9525994</code></pre>
 <p>Using rbfdot kernel also returns the highest accuracy as 95% of the predictions match the actual classification.</p>
 <p>We shall use the rbfdot model as the chosen kernel.</p>
 <p>Let’s now experiment with different values of C:</p>
 <pre class="r"><code>j &lt;- 0
+C_value &lt;- c(0.01,0.1,1,10,100,1000,10000)
 C_results &lt;- rep(0,7)
 
-for (i in c(0.01,0.1,1,10,100,1000,10000)){
+for (i in C_value){
   j&lt;-j+1
   ksvm_model &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = i,scaled = TRUE)
   # check what fraction of the model&#39;s predictions match the actual classification
@@ -415,10 +402,17 @@ for (i in c(0.01,0.1,1,10,100,1000,10000)){
   C_results[j] &lt;- accuracy
 }
 
-C_results</code></pre>
-<pre><code>## [1] 0.5672783 0.8593272 0.8715596 0.9082569 0.9525994 0.9847095 0.9908257</code></pre>
-<p>Based on the results, I would choose C=100 as it returns about 94% accuracy on the dataset. From C=0.1 onwards, the accuracy is quite commendable. C=1000 and C=10000 provides very high accuracy of &gt;98% but the danger is overfitting to this model, as it is a nonlinear kernel.</p>
-<p>Now, I can work out the equation for the classifier. As the ksvm model does not directly return the coefficients, use xmatrix and coef (attributes of the model) to calculate the coefficients.</p>
+data.frame(C_value,C_results)</code></pre>
+<pre><code>##   C_value C_results
+## 1   1e-02 0.5626911
+## 2   1e-01 0.8593272
+## 3   1e+00 0.8700306
+## 4   1e+01 0.9159021
+## 5   1e+02 0.9525994
+## 6   1e+03 0.9847095
+## 7   1e+04 0.9954128</code></pre>
+<p>Based on the results, I would choose C=100 as it returns about 95% accuracy on the dataset. C=1000 and C=10000 provides very high accuracy of &gt;98% but the danger is overfitting to this model, as it is a nonlinear kernel.</p>
+<p>Now, let’s work out the equation for the classifier. As the ksvm model does not directly return the coefficients, use xmatrix and coef (attributes of the model) to calculate the coefficients.</p>
 <p>The goal is to obtain the weight of each of the 10 attributes from our data, so that the classifier will be a1x1 + a2x2…+a0 = 0</p>
 <pre class="r"><code>ksvm_model &lt;- ksvm(x=as.matrix(data[,1:10]),as.factor(data[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
 # calculate a1...am
@@ -427,17 +421,17 @@ a &lt;- colSums(ksvm_model@xmatrix[[1]] * ksvm_model@coef[[1]])
 a0 &lt;- -ksvm_model@b
 a</code></pre>
 <pre><code>##         A1         A2         A3         A8         A9        A10        A11 
-## -18.023315 -32.362947  -6.718882  56.038449  52.363378 -28.380442  24.741855 
+## -18.941751 -38.104327  -8.731618  56.508520  49.863090 -23.631961  13.816172 
 ##        A12        A14        A15 
-## -25.149671 -55.429683  56.454270</code></pre>
+## -23.719192 -58.516918  50.799925</code></pre>
 <pre class="r"><code>a0</code></pre>
-<pre><code>## [1] 0.6497835</code></pre>
-<p>Based on the above, the equation will be (-18.0233154)A1 + (-32.3629471)A2 + (-6.7188818)A3 + (56.0384485)A8 + (52.3633785)A9 + (-28.3804416)A10 + (24.7418552)A11 + (-25.1496712)A12 + (-55.4296829)A14 + (56.4542702)A15 + 0.6497835 = 0</p>
+<pre><code>## [1] 0.8114676</code></pre>
+<p>Based on the above, the equation will be (-18.94)A1 + (-38.1)A2 + (-8.73)A3 + (56.51)A8 + (49.86)A9 + (-23.63)A10 + (13.82)A11 + (-23.72)A12 + (-58.52)A14 + (50.8)A15 + 0.81 = 0</p>
 </div>
 </div>
-<div id="part-3---using-kknn-to-suggest-a-good-value-of-k" class="section level3">
-<h3>Part 3 - Using kknn to suggest a good value of k</h3>
-<p>The next part is to use kknn. This is different from SVM as the methodology for KNN is to determine the k nearest neighbours to the target instance. In this context, k refers to the number of nearest neighbours to use in the model.</p>
+<div id="classification-model-2---k-nearest-neighbours" class="section level3">
+<h3>Classification Model 2 - K nearest neighbours</h3>
+<p>The next part is to use kknn as the classification model. This is different from SVM as the methodology for KNN is to determine the k nearest neighbours to the target instance. In this context, k refers to the number of nearest neighbours to use in the model.</p>
 <div id="loading-relevant-libraries" class="section level4">
 <h4>Loading relevant libraries</h4>
 <pre class="r"><code>library(kknn)</code></pre>
@@ -446,7 +440,9 @@ a</code></pre>
 <div id="fitting-knn" class="section level3">
 <h3>Fitting KNN:</h3>
 <p>To know the accuracy for each value of k, the knn model needs to be created for each data point sequentially. At the end, we can then record the accuracy when comparing with the actual classification.</p>
-<pre class="r"><code>predict &lt;- rep(0,nrow(data))
+<pre class="r"><code>set.seed(1)
+
+predict &lt;- rep(0,nrow(data))
 accuracy &lt;- rep(0,30)
 
 for (kval in 1:30){
@@ -468,11 +464,9 @@ kval &lt;- which.max(accuracy)
 maxaccurate &lt;- round(max(accuracy)*100 , digits=2)</code></pre>
 <p>We can use k = 12 and it classifies the data points in the full dataset to 85.32% accuracy.</p>
 </div>
-<div id="question-3.1" class="section level2">
-<h2>Question 3.1</h2>
-<div id="part-a---using-cross-validation-for-the-knn-model" class="section level3">
-<h3>Part a - Using cross-validation for the knn model</h3>
-<p>In this section, we will use train.knn to perform leave-one-out crossvalidation. Randomly select one third of the dataset to be the test set.</p>
+<div id="using-cross-validation-for-the-knn-model" class="section level3">
+<h3>Using cross-validation for the knn model</h3>
+<p>To improve the model, we can also use train.knn to perform leave-one-out crossvalidation. First run some code to randomly select one third of the dataset to be the test set.</p>
 <pre class="r"><code>sample_size &lt;- floor(nrow(data)/3)
 sample_set &lt;- sample(1:nrow(data), sample_size, replace = FALSE, prob = NULL)
 
@@ -490,10 +484,10 @@ knn_model_train</code></pre>
 ## train.kknn(formula = R1 ~ ., data = train_set, kmax = 50, kernel = c(&quot;optimal&quot;,     &quot;rectangular&quot;, &quot;inv&quot;, &quot;gaussian&quot;, &quot;triangular&quot;), scale = TRUE)
 ## 
 ## Type of response variable: continuous
-## minimal mean absolute error: 0.1604754
-## Minimal mean squared error: 0.09250225
-## Best kernel: inv
-## Best k: 35</code></pre>
+## minimal mean absolute error: 0.2103641
+## Minimal mean squared error: 0.1104383
+## Best kernel: rectangular
+## Best k: 15</code></pre>
 <p>Let’s check the performance on the test set:</p>
 <pre class="r"><code>predict_frac &lt;- predict(knn_model_train,test_set)
 
@@ -503,17 +497,18 @@ predict_test &lt;- floor(predict_frac + 0.5)
 predict_accuracy &lt;- sum(predict_test == test_set[,11]) / nrow(test_set)
 
 predict_accuracy &lt;- round(predict_accuracy*100,digit=2)</code></pre>
-<p>The predicted accuracy is 79.36%.</p>
+<p>The predicted accuracy is 83.03%.</p>
 <p>We can also have more details on the predictions by using a confusion matrix.</p>
 <pre class="r"><code>table(predict_test,test_set[,11])</code></pre>
 <pre><code>##             
-## predict_test   0   1
-##            0 110  29
-##            1  16  63</code></pre>
+## predict_test  0  1
+##            0 96 13
+##            1 24 85</code></pre>
 </div>
-<div id="part-b---splitting-the-data-into-training-validation-and-test-sets" class="section level3">
-<h3>Part b - Splitting the data into training, validation, and test sets</h3>
-<p>I will now split the data into training, validation, and test data sets. I will be using the rotation method. This is because the dataset sequence appears to have the 0s and 1s clumped together, so we don’t want to over-represent either response in our split datasets.</p>
+<div id="splitting-the-data-into-training-validation-and-test-sets" class="section level3">
+<h3>Splitting the data into training, validation, and test sets</h3>
+<p>Another approach is to split the data into 3 sets - training, validation, and test data sets. For this particular dataset, I will not randomly split but use the rotation method (i.e. sequentially allocate each data point into train validation or test set).</p>
+<p>This is because when observing the dataset earlier, the data was organised such that the first part of the dataset had response variable of 1 and the second part had response variable of 0. Due to this grouping, we probably should try the rotation method to prevent over-representing either response in our split datasets.</p>
 <p>Training set - build the model Validation set - picking a model Test set - estimate performance of model</p>
 <pre class="r"><code>validation &lt;- seq(2,nrow(data),5)
 validation_set &lt;- data[validation,]
@@ -529,7 +524,8 @@ train_set &lt;- data[train,]</code></pre>
 <p>I will train on both SVM and KNN models.</p>
 <div id="svm-model" class="section level4">
 <h4>SVM model</h4>
-<pre class="r"><code>  ksvm_model_part3 &lt;- ksvm(x=as.matrix(train_set[,1:10]),as.factor(train_set[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
+<pre class="r"><code>set.seed(1)
+  ksvm_model_part3 &lt;- ksvm(x=as.matrix(train_set[,1:10]),as.factor(train_set[,11]), type = &#39;C-svc&#39;,kernel = &#39;rbfdot&#39;,C = 100,scaled = TRUE)
 
 preds_ksvm_train &lt;- predict(ksvm_model_part3,train_set[,1:10])
 accuracy_ksvm_train &lt;- sum(preds_ksvm_train==train_set[,11]) / nrow(train_set)</code></pre>
@@ -540,7 +536,8 @@ accuracy_ksvm_val &lt;- sum(preds_ksvm_val==validation_set[,11]) / nrow(validati
 </div>
 <div id="knn-model" class="section level4">
 <h4>KNN model</h4>
-<pre class="r"><code>knn_model_part3 &lt;- kknn(R1~.,train_set,validation_set,k=12,scale=TRUE)
+<pre class="r"><code>set.seed(1)
+knn_model_part3 &lt;- kknn(R1~.,train_set,validation_set,k=12,scale=TRUE)
 
 predicted_knn_part3 &lt;- floor(predict(knn_model_part3)+0.5)
 accuracy_knn_part3 &lt;- sum(predicted_knn_part3 == validation_set[,11]) / nrow(validation_set)</code></pre>
@@ -552,7 +549,6 @@ accuracy_knn_part3 &lt;- sum(predicted_knn_part3 == validation_set[,11]) / nrow(
 final_pred_part3 &lt;- floor(predict(final_model_part3)+0.5)
 accuracy_part3 &lt;- sum(final_pred_part3 == test_set[,11]) / nrow(test_set)</code></pre>
 <p>The performance of the KNN model on the test set is 82%. Therefore, we will judge the effectiveness of the selected model as 82%.</p>
-</div>
 </div>
 </div>
 
